@@ -4,13 +4,19 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Meow Note - Type to Survive!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bungee&family=Permanent+Marker&display=swap"
+      rel="stylesheet"
+    />
+    <title>Beatdown Ballet - Type to Survive!</title>
   </head>
   <body>
     <div id="app">
       <div id="game-container">
         <div id="title-screen" class="screen active">
-          <h1>MEOW NOTE</h1>
+          <h1>BEATDOWN BALLET</h1>
           <p class="subtitle">Type the words to defeat the enemies!</p>
           <button id="start-btn" class="game-btn">START GAME</button>
           <div class="instructions">
@@ -34,6 +40,10 @@
             <div class="stat">
               <span class="label">Level:</span>
               <span id="level">1</span>
+            </div>
+            <div class="stat">
+              <span class="label">WPM:</span>
+              <span id="wpm">0</span>
             </div>
           </div>
 

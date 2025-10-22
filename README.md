@@ -32,11 +32,15 @@ npm run build
 
 ## 🎯 Game Features
 
-- Enemies approach from all directions (top, bottom, left, right)
-- Progressive difficulty - enemies get faster as you level up
-- Score tracking and lives system
-- Visual feedback for typed words
-- Smooth animations and particle effects
+- **Dynamic Enemies** - Bears approach from all directions with smooth animations
+- **Progressive Difficulty** - Enemies get faster as you level up
+- **Freeze Power** - Type "freeze" on blue enemies to freeze all enemies for 3 seconds
+- **Multi-Kill System** - Defeat multiple enemies with the same word for massive combos
+- **Halo-Style Announcer** - Epic kill streak sounds (Double Kill, Triple Kill, Killtacular, etc.)
+- **WPM Tracker** - Track your typing speed in real-time
+- **Combo System** - Chain kills together for bonus points
+- **Staggered Explosions** - Satisfying cascading explosion effects
+- **Sound Effects** - Cat meows, explosions, and epic announcer voice lines
 
 ## 📝 License
 
@@ -45,4 +49,3 @@ MIT
 ---
 
 Made with ❤️ and 😺
-
