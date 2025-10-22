@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meow Note - Type to Survive!</title>
+  </head>
+  <body>
+    <div id="app">
+      <div id="game-container">
+        <div id="title-screen" class="screen active">
+          <h1>MEOW NOTE</h1>
+          <p class="subtitle">Type the words to defeat the enemies!</p>
+          <button id="start-btn" class="game-btn">START GAME</button>
+          <div class="instructions">
+            <h3>How to Play:</h3>
+            <p>• Type the words on enemies to defeat them</p>
+            <p>• Don't let them reach your cat!</p>
+            <p>• Survive as long as you can!</p>
+          </div>
+        </div>
+
+        <div id="game-screen" class="screen">
+          <div id="game-header">
+            <div class="stat">
+              <span class="label">Score:</span>
+              <span id="score">0</span>
+            </div>
+            <div class="stat">
+              <span class="label">Lives:</span>
+              <span id="lives">❤️❤️❤️</span>
+            </div>
+            <div class="stat">
+              <span class="label">Level:</span>
+              <span id="level">1</span>
+            </div>
+          </div>
+
+          <canvas id="game-canvas"></canvas>
+
+          <div id="input-area">
+            <div id="current-input" class="typing-display"></div>
+            <input
+              type="text"
+              id="type-input"
+              autocomplete="off"
+              placeholder="Start typing..."
+            />
+          </div>
+        </div>
+
+        <div id="game-over-screen" class="screen">
+          <h1>GAME OVER</h1>
+          <p class="final-score">
+            Final Score: <span id="final-score">0</span>
+          </p>
+          <button id="restart-btn" class="game-btn">PLAY AGAIN</button>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

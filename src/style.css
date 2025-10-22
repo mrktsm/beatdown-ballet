@@ -1,0 +1,139 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: sans-serif;
+  background: #000;
+  color: #fff;
+  overflow: hidden;
+  height: 100vh;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+}
+
+#game-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.screen {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.screen.active {
+  display: flex;
+}
+
+#title-screen {
+  text-align: center;
+}
+
+h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.instructions {
+  margin-top: 2rem;
+  padding: 1rem;
+  border: 1px solid #fff;
+}
+
+.instructions h3 {
+  margin-bottom: 0.5rem;
+}
+
+.instructions p {
+  margin: 0.3rem 0;
+}
+
+.game-btn {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  background: #333;
+  color: #fff;
+  border: 1px solid #fff;
+  cursor: pointer;
+}
+
+.game-btn:hover {
+  background: #555;
+}
+
+#game-screen {
+  justify-content: flex-start;
+  padding: 0;
+}
+
+#game-header {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  padding: 1rem;
+  background: #111;
+  border-bottom: 1px solid #333;
+}
+
+.stat {
+  font-size: 1.2rem;
+}
+
+#game-canvas {
+  flex: 1;
+  background: #000;
+  width: 100%;
+  display: block;
+}
+
+#input-area {
+  width: 100%;
+  padding: 1rem;
+  background: #111;
+  border-top: 1px solid #333;
+}
+
+#current-input {
+  text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  min-height: 2rem;
+}
+
+#type-input {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 1.2rem;
+  text-align: center;
+  background: #222;
+  border: 1px solid #444;
+  color: #fff;
+  outline: none;
+}
+
+#game-over-screen h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.final-score {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
