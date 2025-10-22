@@ -1,8 +1,11 @@
 @font-face {
-  font-family: 'Star Crush';
-  src: url('/Star Crush.ttf') format('truetype');
+  font-family: "Star Crush";
+  src:
+    url("/fonts/Star%20Crush.otf") format("opentype"),
+    url("/fonts/Star%20Crush.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 * {
@@ -49,7 +52,7 @@ body {
 }
 
 h1 {
-  font-family: 'Star Crush', sans-serif;
+  font-family: "Star Crush", sans-serif;
   font-size: 3rem;
   margin-bottom: 1rem;
   letter-spacing: 2px;
