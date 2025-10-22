@@ -115,6 +115,7 @@ h1 {
   font-size: 1.5rem;
   margin-bottom: 0.5rem;
   min-height: 2rem;
+  display: none; /* Hidden - text now shows above cat on canvas */
 }
 
 #type-input {

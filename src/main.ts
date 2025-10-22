@@ -80,6 +80,13 @@ class Game {
   private catY: number = 0;
   private catRadius: number = 40;
 
+  // Cat images and animation
+  private catImageDefault: HTMLImageElement;
+  private catImageTail: HTMLImageElement;
+  private imagesLoaded: boolean = false;
+  private tailWiggleFrame: number = 0;
+  private tailWiggleSpeed: number = 30; // frames between switches
+
   constructor() {
     this.canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
     this.ctx = this.canvas.getContext("2d")!;
@@ -97,8 +104,28 @@ class Game {
 
     this.setupCanvas();
     this.setupEventListeners();
+    this.loadImages();
 
     window.addEventListener("resize", () => this.setupCanvas());
+  }
+
+  private loadImages() {
+    this.catImageDefault = new Image();
+    this.catImageTail = new Image();
+
+    let loadedCount = 0;
+    const onLoad = () => {
+      loadedCount++;
+      if (loadedCount === 2) {
+        this.imagesLoaded = true;
+      }
+    };
+
+    this.catImageDefault.onload = onLoad;
+    this.catImageTail.onload = onLoad;
+
+    this.catImageDefault.src = "/src/assets/meow-idle/meow-default.png";
+    this.catImageTail.src = "/src/assets/meow-idle/meow-default-tail.png";
   }
 
   private setupCanvas() {
@@ -137,7 +164,8 @@ class Game {
 
     this.updateUI();
     this.typeInput.value = "";
-    this.currentInputEl.textContent = "";
+    // Text is now drawn on canvas, no need to update HTML element
+    // this.currentInputEl.textContent = "";
 
     this.showScreen("game");
     this.typeInput.focus();
@@ -211,7 +239,8 @@ class Game {
   }
 
   private handleTyping() {
-    this.currentInputEl.textContent = this.currentInput;
+    // Text is now drawn on canvas above cat's head
+    // this.currentInputEl.textContent = this.currentInput;
 
     if (!this.currentInput) {
       this.targetedEnemy = null;
@@ -231,7 +260,8 @@ class Game {
         this.destroyEnemy(matchingEnemy);
         this.typeInput.value = "";
         this.currentInput = "";
-        this.currentInputEl.textContent = "";
+        // Text is now drawn on canvas
+        // this.currentInputEl.textContent = "";
         this.targetedEnemy = null;
       }
     } else {
@@ -315,79 +345,58 @@ class Game {
   }
 
   private drawCat() {
+    if (!this.imagesLoaded) return;
+
     this.ctx.save();
 
-    // Draw glow
-    const gradient = this.ctx.createRadialGradient(
-      this.catX,
-      this.catY,
-      0,
-      this.catX,
-      this.catY,
-      this.catRadius * 2
+    // Determine which image to use based on animation frame
+    const currentImage =
+      Math.floor(this.tailWiggleFrame / this.tailWiggleSpeed) % 2 === 0
+        ? this.catImageDefault
+        : this.catImageTail;
+
+    // Draw cat image centered, maintaining aspect ratio
+    const scale = 0.3; // Adjust this to change cat size
+    const catWidth = currentImage.naturalWidth * scale;
+    const catHeight = currentImage.naturalHeight * scale;
+
+    this.ctx.drawImage(
+      currentImage,
+      this.catX - catWidth / 2,
+      this.catY - catHeight / 2,
+      catWidth,
+      catHeight
     );
-    gradient.addColorStop(0, "rgba(255, 107, 157, 0.3)");
-    gradient.addColorStop(1, "rgba(255, 107, 157, 0)");
-    this.ctx.fillStyle = gradient;
-    this.ctx.fillRect(
-      this.catX - this.catRadius * 2,
-      this.catY - this.catRadius * 2,
-      this.catRadius * 4,
-      this.catRadius * 4
-    );
 
-    // Draw cat body (circle)
-    this.ctx.fillStyle = "#ff6b9d";
-    this.ctx.beginPath();
-    this.ctx.arc(this.catX, this.catY, this.catRadius, 0, Math.PI * 2);
-    this.ctx.fill();
+    // Draw typing text above cat's head
+    if (this.currentInput) {
+      this.ctx.font = "bold 24px sans-serif";
+      this.ctx.textAlign = "center";
+      this.ctx.textBaseline = "bottom";
 
-    // Draw cat face
-    this.ctx.fillStyle = "#fff";
-    // Eyes
-    this.ctx.beginPath();
-    this.ctx.arc(this.catX - 12, this.catY - 8, 5, 0, Math.PI * 2);
-    this.ctx.arc(this.catX + 12, this.catY - 8, 5, 0, Math.PI * 2);
-    this.ctx.fill();
+      // Draw text background
+      const textWidth = this.ctx.measureText(this.currentInput).width;
+      const padding = 10;
+      const textX = this.catX;
+      const textY = this.catY - catHeight / 2 - 20;
 
-    // Pupils
-    this.ctx.fillStyle = "#000";
-    this.ctx.beginPath();
-    this.ctx.arc(this.catX - 12, this.catY - 8, 2, 0, Math.PI * 2);
-    this.ctx.arc(this.catX + 12, this.catY - 8, 2, 0, Math.PI * 2);
-    this.ctx.fill();
+      this.ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+      this.ctx.fillRect(
+        textX - textWidth / 2 - padding,
+        textY - 30,
+        textWidth + padding * 2,
+        40
+      );
 
-    // Nose
-    this.ctx.fillStyle = "#ff4757";
-    this.ctx.beginPath();
-    this.ctx.arc(this.catX, this.catY + 2, 3, 0, Math.PI * 2);
-    this.ctx.fill();
-
-    // Mouth
-    this.ctx.strokeStyle = "#000";
-    this.ctx.lineWidth = 2;
-    this.ctx.beginPath();
-    this.ctx.arc(this.catX - 5, this.catY + 8, 5, 0, Math.PI);
-    this.ctx.arc(this.catX + 5, this.catY + 8, 5, 0, Math.PI);
-    this.ctx.stroke();
-
-    // Ears
-    this.ctx.fillStyle = "#ff6b9d";
-    this.ctx.beginPath();
-    this.ctx.moveTo(this.catX - 25, this.catY - 20);
-    this.ctx.lineTo(this.catX - 15, this.catY - 35);
-    this.ctx.lineTo(this.catX - 10, this.catY - 20);
-    this.ctx.closePath();
-    this.ctx.fill();
-
-    this.ctx.beginPath();
-    this.ctx.moveTo(this.catX + 25, this.catY - 20);
-    this.ctx.lineTo(this.catX + 15, this.catY - 35);
-    this.ctx.lineTo(this.catX + 10, this.catY - 20);
-    this.ctx.closePath();
-    this.ctx.fill();
+      // Draw text
+      this.ctx.fillStyle = "#4ecca3";
+      this.ctx.fillText(this.currentInput, textX, textY);
+    }
 
     this.ctx.restore();
+
+    // Increment animation frame
+    this.tailWiggleFrame++;
   }
 
   private drawEnemy(enemy: Enemy) {
