@@ -300,16 +300,30 @@ class Game {
     this.fire2.onload = onLoad;
     this.bearSpriteSheet.onload = onBearLoad;
 
-    // Set sources (exclude slide per requirement)
-    this.dancerImages["balancing"].src =
-      "/src/assets/dancing-lady/balancing.png";
-    this.dancerImages["hips"].src = "/src/assets/dancing-lady/hips.png";
-    this.dancerImages["snap"].src = "/src/assets/dancing-lady/snap.png";
-    this.dancerImages["skip"].src = "/src/assets/dancing-lady/skip.png";
-    this.fire0.src = "/src/fire/fire-0.png";
-    this.fire1.src = "/src/fire/fire-1.png";
-    this.fire2.src = "/src/fire/fire-2.png";
-    this.bearSpriteSheet.src = "/src/assets/enemies/Bear.png";
+    // Set sources using Vite-friendly URLs so they bundle on production
+    this.dancerImages["balancing"].src = new URL(
+      "./assets/dancing-lady/balancing.png",
+      import.meta.url
+    ).href;
+    this.dancerImages["hips"].src = new URL(
+      "./assets/dancing-lady/hips.png",
+      import.meta.url
+    ).href;
+    this.dancerImages["snap"].src = new URL(
+      "./assets/dancing-lady/snap.png",
+      import.meta.url
+    ).href;
+    this.dancerImages["skip"].src = new URL(
+      "./assets/dancing-lady/skip.png",
+      import.meta.url
+    ).href;
+    this.fire0.src = new URL("./fire/fire-0.png", import.meta.url).href;
+    this.fire1.src = new URL("./fire/fire-1.png", import.meta.url).href;
+    this.fire2.src = new URL("./fire/fire-2.png", import.meta.url).href;
+    this.bearSpriteSheet.src = new URL(
+      "./assets/enemies/Bear.png",
+      import.meta.url
+    ).href;
   }
 
   private setupCanvas() {
