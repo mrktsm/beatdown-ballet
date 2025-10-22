@@ -88,26 +88,39 @@ h1 {
   justify-content: space-around;
   width: 100%;
   padding: 1rem;
-  background: #111;
-  border-bottom: 1px solid #333;
+  background: transparent;
+  border-bottom: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
 }
 
 .stat {
   font-size: 1.2rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.5);
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
 }
 
 #game-canvas {
   flex: 1;
   background: #000;
   width: 100%;
+  height: 100vh;
   display: block;
 }
 
 #input-area {
+  position: fixed;
+  bottom: 0;
+  left: 0;
   width: 100%;
   padding: 1rem;
-  background: #111;
-  border-top: 1px solid #333;
+  background: transparent;
+  border: none;
+  pointer-events: none; /* Allow clicks to pass through */
 }
 
 #current-input {
@@ -123,10 +136,12 @@ h1 {
   padding: 0.5rem;
   font-size: 1.2rem;
   text-align: center;
-  background: #222;
-  border: 1px solid #444;
-  color: #fff;
+  background: transparent;
+  border: none;
+  color: transparent;
   outline: none;
+  caret-color: transparent;
+  pointer-events: auto; /* Allow input to receive focus */
 }
 
 #game-over-screen h1 {

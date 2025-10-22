@@ -62,6 +62,14 @@ class Game {
   private enemyIdCounter: number = 0;
   private animationId: number = 0;
 
+  // Combo system
+  private combo: number = 0;
+  private lastKillTime: number = 0;
+  private comboTimeout: number = 2000; // 2 seconds to maintain combo
+  private comboMessage: string = "";
+  private comboMessageTime: number = 0;
+  private comboMessageDuration: number = 1500;
+
   // UI Elements
   private scoreEl: HTMLElement;
   private livesEl: HTMLElement;
@@ -78,7 +86,7 @@ class Game {
   // Cat position (center)
   private catX: number = 0;
   private catY: number = 0;
-  private catRadius: number = 40;
+  private catRadius: number = 60;
 
   // Cat images and animation
   private catImageDefault: HTMLImageElement;
@@ -131,7 +139,7 @@ class Game {
   private setupCanvas() {
     // Set canvas to proper size
     this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight - 200; // Account for header and input
+    this.canvas.height = window.innerHeight; // Full screen canvas
 
     this.catX = this.canvas.width / 2;
     this.catY = this.canvas.height / 2;
@@ -149,6 +157,20 @@ class Game {
       this.currentInput = (e.target as HTMLInputElement).value.toLowerCase();
       this.handleTyping();
     });
+
+    // Keep input focused when clicking on canvas
+    this.canvas.addEventListener("click", () => {
+      if (this.gameRunning) {
+        this.typeInput.focus();
+      }
+    });
+
+    // Auto-focus input on any key press
+    window.addEventListener("keydown", () => {
+      if (this.gameRunning) {
+        this.typeInput.focus();
+      }
+    });
   }
 
   private startGame() {
@@ -161,6 +183,12 @@ class Game {
     this.lastSpawnTime = Date.now();
     this.spawnInterval = 2000;
     this.gameRunning = true;
+
+    // Reset combo system
+    this.combo = 0;
+    this.lastKillTime = 0;
+    this.comboMessage = "";
+    this.comboMessageTime = 0;
 
     this.updateUI();
     this.typeInput.value = "";
@@ -270,18 +298,58 @@ class Game {
   }
 
   private destroyEnemy(enemy: Enemy) {
-    const index = this.enemies.indexOf(enemy);
-    if (index > -1) {
-      this.enemies.splice(index, 1);
-      this.score += 10 * this.level;
-      this.updateUI();
+    const word = enemy.word;
 
-      // Level up every 10 enemies
-      if (this.score % 100 === 0 && this.score > 0) {
-        this.level++;
-        this.spawnInterval = Math.max(800, this.spawnInterval - 200);
-        this.updateUI();
-      }
+    // Find all enemies with the same word
+    const matchingEnemies = this.enemies.filter((e) => e.word === word);
+    const killCount = matchingEnemies.length;
+
+    // Remove all matching enemies
+    this.enemies = this.enemies.filter((e) => e.word !== word);
+
+    // Update combo
+    const now = Date.now();
+    if (now - this.lastKillTime < this.comboTimeout) {
+      this.combo += killCount;
+    } else {
+      this.combo = killCount;
+    }
+    this.lastKillTime = now;
+
+    // Calculate score with combo multiplier
+    const baseScore = 10 * this.level * killCount;
+    const comboBonus =
+      this.combo > 1 ? Math.floor(baseScore * (this.combo * 0.1)) : 0;
+    this.score += baseScore + comboBonus;
+
+    // Set combo message
+    if (killCount > 1) {
+      const killMessages = [
+        "DOUBLE KILL!",
+        "TRIPLE KILL!",
+        "MULTI KILL!",
+        "MEGA KILL!",
+      ];
+      const killMsg =
+        killMessages[Math.min(killCount - 2, killMessages.length - 1)];
+      this.comboMessage = killMsg;
+    } else if (this.combo > 3) {
+      this.comboMessage = `${this.combo}x COMBO!`;
+    } else {
+      this.comboMessage = "";
+    }
+
+    if (this.comboMessage) {
+      this.comboMessageTime = now;
+    }
+
+    this.updateUI();
+
+    // Level up every 10 enemies
+    if (this.score % 100 === 0 && this.score > 0) {
+      this.level++;
+      this.spawnInterval = Math.max(800, this.spawnInterval - 200);
+      this.updateUI();
     }
   }
 
@@ -342,6 +410,62 @@ class Game {
     for (const enemy of this.enemies) {
       this.drawEnemy(enemy);
     }
+
+    // Draw combo message
+    const now = Date.now();
+    if (
+      this.comboMessage &&
+      now - this.comboMessageTime < this.comboMessageDuration
+    ) {
+      const elapsed = now - this.comboMessageTime;
+      const progress = elapsed / this.comboMessageDuration;
+
+      // Fade out effect
+      const alpha = 1 - progress;
+
+      // Scale effect - start big and shrink slightly
+      const scale = 1 + (1 - progress) * 0.5;
+
+      this.ctx.save();
+      this.ctx.globalAlpha = alpha;
+      this.ctx.font = `bold ${48 * scale}px sans-serif`;
+      this.ctx.textAlign = "center";
+      this.ctx.textBaseline = "middle";
+
+      // Draw text shadow for better visibility
+      this.ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+      this.ctx.shadowBlur = 10;
+      this.ctx.shadowOffsetX = 3;
+      this.ctx.shadowOffsetY = 3;
+
+      // Color based on message type
+      if (this.comboMessage.includes("KILL")) {
+        this.ctx.fillStyle = "#ff6b6b";
+      } else {
+        this.ctx.fillStyle = "#ffd93d";
+      }
+
+      this.ctx.fillText(
+        this.comboMessage,
+        this.canvas.width / 2,
+        this.canvas.height / 3
+      );
+
+      this.ctx.restore();
+    }
+
+    // Draw combo counter if active
+    if (this.combo > 1) {
+      this.ctx.save();
+      this.ctx.font = "bold 24px sans-serif";
+      this.ctx.textAlign = "right";
+      this.ctx.textBaseline = "top";
+      this.ctx.fillStyle = "#ffd93d";
+      this.ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+      this.ctx.shadowBlur = 5;
+      this.ctx.fillText(`${this.combo}x COMBO`, this.canvas.width - 20, 80);
+      this.ctx.restore();
+    }
   }
 
   private drawCat() {
@@ -356,7 +480,7 @@ class Game {
         : this.catImageTail;
 
     // Draw cat image centered, maintaining aspect ratio
-    const scale = 0.3; // Adjust this to change cat size
+    const scale = 0.5; // Adjust this to change cat size
     const catWidth = currentImage.naturalWidth * scale;
     const catHeight = currentImage.naturalHeight * scale;
 
@@ -499,6 +623,11 @@ class Game {
     if (now - this.lastSpawnTime > this.spawnInterval) {
       this.spawnEnemy();
       this.lastSpawnTime = now;
+    }
+
+    // Reset combo if timeout expired
+    if (now - this.lastKillTime > this.comboTimeout && this.combo > 0) {
+      this.combo = 0;
     }
 
     this.updateEnemies();
