@@ -18,6 +18,14 @@
       type="font/otf"
       crossorigin
     />
+    <!-- Vercel Web Analytics & Speed Insights -->
+    <script defer src="/_vercel/analytics/script.js"></script>
+    <script>
+      window.va = window.va || function () {
+        (window.vaq = window.vaq || []).push(arguments);
+      };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -80,24 +88,6 @@
             Final Score: <span id="final-score">0</span>
           </p>
           <button id="restart-btn" class="game-btn">PLAY AGAIN</button>
-        </div>
-
-        <div id="pay-screen" class="screen">
-          <h1>SUPPORT BEATDOWN BALLET</h1>
-          <p class="final-score">Unlock extras to keep dancing!</p>
-          <div>
-            <button id="resume-btn" class="game-btn" style="margin-right: 1rem">
-              RESUME
-            </button>
-            <a
-              id="pay-btn"
-              class="game-btn"
-              href="#"
-              target="_blank"
-              rel="noopener"
-              >PAY NOW</a
-            >
-          </div>
         </div>
       </div>
     </div>

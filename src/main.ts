@@ -121,7 +121,6 @@ class Game {
   private titleScreen: HTMLElement;
   private gameScreen: HTMLElement;
   private gameOverScreen: HTMLElement;
-  private payScreen: HTMLElement;
 
   // Cat position (center)
   private catX: number = 0;
@@ -198,7 +197,6 @@ class Game {
     this.titleScreen = document.getElementById("title-screen")!;
     this.gameScreen = document.getElementById("game-screen")!;
     this.gameOverScreen = document.getElementById("game-over-screen")!;
-    this.payScreen = document.getElementById("pay-screen")!;
 
     this.setupCanvas();
     this.setupEventListeners();
@@ -396,23 +394,6 @@ class Game {
         this.typeInput.focus();
       }
     });
-
-    // ESC to show pay screen, Resume to continue, Pay link stub
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        this.showScreen("pay");
-      }
-    });
-    document.getElementById("resume-btn")?.addEventListener("click", () => {
-      this.showScreen("game");
-      this.typeInput.focus();
-    });
-    const payBtn = document.getElementById(
-      "pay-btn"
-    ) as HTMLAnchorElement | null;
-    if (payBtn) {
-      payBtn.href = "https://buy.stripe.com/test_123"; // placeholder
-    }
   }
 
   private startGame() {
@@ -467,11 +448,10 @@ class Game {
     this.gameLoop();
   }
 
-  private showScreen(screen: "title" | "game" | "gameover" | "pay") {
+  private showScreen(screen: "title" | "game" | "gameover") {
     this.titleScreen.classList.remove("active");
     this.gameScreen.classList.remove("active");
     this.gameOverScreen.classList.remove("active");
-    this.payScreen.classList.remove("active");
 
     switch (screen) {
       case "title":
@@ -483,9 +463,6 @@ class Game {
       case "gameover":
         this.gameOverScreen.classList.add("active");
         this.finalScoreEl.textContent = this.score.toString();
-        break;
-      case "pay":
-        this.payScreen.classList.add("active");
         break;
     }
   }
