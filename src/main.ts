@@ -33,6 +33,7 @@ const WORDS = [
   "strike",
   "attack",
   "defend",
+  "gyat",
 ];
 
 interface Enemy {
@@ -51,6 +52,9 @@ interface Enemy {
   direction: "right" | "left" | "down" | "up";
   hasSuperpower?: boolean;
   markedForFreeze?: boolean;
+  // Fade-in on spawn
+  appearFrame: number;
+  appearDuration: number;
 }
 
 interface Particle {
@@ -87,7 +91,8 @@ class Game {
   private completedWordDuration: number = 2000; // 2 seconds
   private targetedEnemy: Enemy | null = null;
   private lastSpawnTime: number = 0;
-  private spawnInterval: number = 1200;
+  private spawnInterval: number = 900; // faster baseline
+  private maxEnemies: number = 14; // cap concurrent enemies
   private enemyIdCounter: number = 0;
   private animationId: number = 0;
 
@@ -116,6 +121,7 @@ class Game {
   private titleScreen: HTMLElement;
   private gameScreen: HTMLElement;
   private gameOverScreen: HTMLElement;
+  private payScreen: HTMLElement;
 
   // Cat position (center)
   private catX: number = 0;
@@ -126,6 +132,7 @@ class Game {
   private fire1!: HTMLImageElement;
   private fire2!: HTMLImageElement;
   private bearSpriteSheet!: HTMLImageElement;
+  // private backgroundImage!: HTMLImageElement; // removed per request
   private spriteWidth: number = 0; // Will be calculated from image
   private spriteHeight: number = 0; // Will be calculated from image
   private spritesPerRow: number = 4;
@@ -144,10 +151,13 @@ class Game {
   private dancerAnimSpeed: number = 5;
   // Collision tuning (require enemies to get closer to deal damage)
   private collisionProximityFactor: number = 0.85;
+  // Game over handling
+  private gameOverPending: boolean = false;
+  private gameOverTimeoutId: number | null = null;
   // Hurt state
   private isHurt: boolean = false;
   private hurtTimer: number = 0; // frames remaining for hurt animation
-  private hurtDuration: number = 48; // total frames to show hurt animation
+  private hurtDuration: number = 24; // shorter final red animation
   private hurtSeqIndex: number = 0;
   private hurtSequence: number[] = [];
 
@@ -188,6 +198,7 @@ class Game {
     this.titleScreen = document.getElementById("title-screen")!;
     this.gameScreen = document.getElementById("game-screen")!;
     this.gameOverScreen = document.getElementById("game-over-screen")!;
+    this.payScreen = document.getElementById("pay-screen")!;
 
     this.setupCanvas();
     this.setupEventListeners();
@@ -324,6 +335,7 @@ class Game {
       "./assets/enemies/Bear.png",
       import.meta.url
     ).href;
+    // background removed
   }
 
   private setupCanvas() {
@@ -347,11 +359,13 @@ class Game {
       const val = (e.target as HTMLInputElement).value.toLowerCase();
 
       // Select a random dance (excluding slide and balancing) when starting to type
-      if (this.currentInput.length === 0 && val.length > 0) {
-        const dances = ["hips", "snap"] as const;
-        this.currentDance = dances[Math.floor(Math.random() * dances.length)];
-        this.dancerFrame = 0;
-        this.lastTypeTimeMs = Date.now();
+      if (!this.isHurt) {
+        if (this.currentInput.length === 0 && val.length > 0) {
+          const dances = ["hips", "snap"] as const;
+          this.currentDance = dances[Math.floor(Math.random() * dances.length)];
+          this.dancerFrame = 0;
+          this.lastTypeTimeMs = Date.now();
+        }
       }
 
       // Record last type time and switch animation to time-based while typing
@@ -360,7 +374,7 @@ class Game {
       }
 
       // Revert to idle when input becomes empty
-      if (val.length === 0) {
+      if (val.length === 0 && !this.isHurt) {
         this.currentDance = "balancing";
         this.dancerFrame = 0;
       }
@@ -382,6 +396,23 @@ class Game {
         this.typeInput.focus();
       }
     });
+
+    // ESC to show pay screen, Resume to continue, Pay link stub
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        this.showScreen("pay");
+      }
+    });
+    document.getElementById("resume-btn")?.addEventListener("click", () => {
+      this.showScreen("game");
+      this.typeInput.focus();
+    });
+    const payBtn = document.getElementById(
+      "pay-btn"
+    ) as HTMLAnchorElement | null;
+    if (payBtn) {
+      payBtn.href = "https://buy.stripe.com/test_123"; // placeholder
+    }
   }
 
   private startGame() {
@@ -436,10 +467,11 @@ class Game {
     this.gameLoop();
   }
 
-  private showScreen(screen: "title" | "game" | "gameover") {
+  private showScreen(screen: "title" | "game" | "gameover" | "pay") {
     this.titleScreen.classList.remove("active");
     this.gameScreen.classList.remove("active");
     this.gameOverScreen.classList.remove("active");
+    this.payScreen.classList.remove("active");
 
     switch (screen) {
       case "title":
@@ -452,16 +484,18 @@ class Game {
         this.gameOverScreen.classList.add("active");
         this.finalScoreEl.textContent = this.score.toString();
         break;
+      case "pay":
+        this.payScreen.classList.add("active");
+        break;
     }
   }
 
   private spawnEnemy() {
     const word = WORDS[Math.floor(Math.random() * WORDS.length)];
 
-    // Random side: 0 = left, 1 = right, 2 = top, 3 = bottom
-    const side = Math.floor(Math.random() * 4);
+    // Spawn off-screen from a random side (original behavior)
+    const side = Math.floor(Math.random() * 4); // 0=left,1=right,2=top,3=bottom
     let x: number, y: number;
-
     switch (side) {
       case 0: // Left
         x = -50;
@@ -497,7 +531,7 @@ class Game {
       y,
       targetX: this.catX,
       targetY: this.catY,
-      speed: 0.5 + this.level * 0.3, // Faster speed increase per level
+      speed: 0.6 + this.level * 0.2, // smoother scaling
       radius: 45,
       angle,
       animationFrame: 0,
@@ -505,6 +539,8 @@ class Game {
       hasSuperpower,
       markedForFreeze: false,
       frozen: this.freezeActive, // Spawn frozen if freeze is active
+      appearFrame: 0,
+      appearDuration: 20,
     };
 
     this.enemies.push(enemy);
@@ -930,6 +966,17 @@ class Game {
         );
 
         if (this.lives <= 0) {
+          this.gameOverPending = true;
+          // Trigger hurt state if not already to ensure final red animation
+          if (!this.isHurt) {
+            this.isHurt = true;
+            this.hurtTimer = this.hurtDuration;
+            this.currentDance = "skip";
+            this.hurtSeqIndex = 0;
+            this.hurtSequence = Array.from({ length: this.hurtDuration }, () =>
+              Math.floor(Math.random() * 8)
+            );
+          }
           this.gameOver();
         }
 
@@ -966,17 +1013,32 @@ class Game {
   }
 
   private gameOver() {
-    // If hurt sequence is active, delay game over until it finishes to show last red animation
-    if (this.isHurt && this.hurtTimer > 0) {
+    // If hurt sequence is active or flagged, delay game over until it finishes to show last red animation
+    if ((this.isHurt && this.hurtTimer > 0) || this.gameOverPending) {
       // Poll until hurtTimer ends, then call gameOver again
       const checkAfterHurt = () => {
         if (this.hurtTimer > 0) {
           requestAnimationFrame(checkAfterHurt);
         } else {
-          this.gameOver();
+          this.gameOverPending = false;
+          // Proceed to final screen
+          this.gameRunning = false;
+          cancelAnimationFrame(this.animationId);
+          this.showScreen("gameover");
         }
       };
       requestAnimationFrame(checkAfterHurt);
+      // Safety fallback: force game over if animation never completes
+      if (this.gameOverTimeoutId !== null) {
+        clearTimeout(this.gameOverTimeoutId);
+      }
+      this.gameOverTimeoutId = window.setTimeout(() => {
+        this.gameOverPending = false;
+        this.isHurt = false;
+        this.gameRunning = false;
+        cancelAnimationFrame(this.animationId);
+        this.showScreen("gameover");
+      }, 800);
       return;
     }
 
@@ -1397,8 +1459,14 @@ class Game {
 
     const now = Date.now();
 
-    // Spawn enemies
-    if (now - this.lastSpawnTime > this.spawnInterval) {
+    // Spawn enemies with cap and dynamic interval scaling
+    const enemyCount = this.enemies.length;
+    const levelFactor = Math.min(1 + this.level * 0.05, 2.5);
+    const dynamicInterval = Math.max(300, this.spawnInterval / levelFactor);
+    if (
+      enemyCount < this.maxEnemies &&
+      now - this.lastSpawnTime > dynamicInterval
+    ) {
       this.spawnEnemy();
       this.lastSpawnTime = now;
     }

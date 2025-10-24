@@ -1,7 +1,6 @@
 @font-face {
   font-family: "Star Crush";
-  src:
-    url("/fonts/Star%20Crush.otf") format("opentype"),
+  src: url("/fonts/Star%20Crush.otf") format("opentype"),
     url("/fonts/Star%20Crush.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
@@ -158,6 +157,11 @@ h1 {
 
 #game-over-screen h1 {
   font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+#pay-screen h1 {
+  font-size: 2.4rem;
   margin-bottom: 1rem;
 }
 
